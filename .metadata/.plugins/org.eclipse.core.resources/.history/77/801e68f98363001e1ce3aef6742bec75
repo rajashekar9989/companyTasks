@@ -1,0 +1,53 @@
+package com.portal.ScanPdf.responseEntity;
+
+
+
+public class ResponseEntity {
+	
+	
+	private String scanType;
+	private String contentType;
+	private String rawData;
+	private String decodedData;
+	private boolean esignValid;
+	
+	
+	public String getScanType() {
+		return scanType;
+	}
+	public void setScanType(String scanType) {
+		this.scanType = scanType;
+	}
+	public String getContentType() {
+		return contentType;
+	}
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
+	public String getRawData() {
+		return rawData;
+	}
+	public void setRawData(String rawData) {
+		this.rawData = rawData;
+	}
+	public String getDecodedData() {
+		return decodedData;
+	}
+	public void setDecodedData(String decodedData) {
+		this.decodedData = decodedData;
+	}
+	public boolean isEsignValid() {
+		return esignValid;
+	}
+	public void setEsignValid(boolean esignValid) {
+		this.esignValid = esignValid;
+	}
+	
+	
+	
+	
+	
+	
+	
+
+}

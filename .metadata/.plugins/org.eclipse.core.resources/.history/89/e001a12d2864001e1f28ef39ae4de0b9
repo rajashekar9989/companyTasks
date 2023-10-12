@@ -1,0 +1,8 @@
+package com.portal.ScanPdf.responseEntity;
+
+public enum ScanMode {
+	
+	BARCODE,
+	QRCODE,
+
+}

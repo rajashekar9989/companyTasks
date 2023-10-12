@@ -1,0 +1,95 @@
+package scanqrcodeFromPdf;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.portal.ScanPdf.responseEntity.ResObj;
+
+public class QRCodeExtractor {
+
+	public static void main(String[] args) {
+		try {
+
+			File sourceFile = new File("C:\\Users\\admn\\Downloads\\Invoice_sample (2)[68].pdf");
+
+			// PDDocument document = PDDocument.load(sourceFile);
+			PDDocument document = Loader.loadPDF(sourceFile);
+
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+
+			// Loop through each page in the PDF
+
+			for (int page = 0; page < document.getNumberOfPages(); ++page) {
+				// Render the page as an image
+				BufferedImage image = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
+
+				// Decode QR code from the image
+				String qrCodeData = decodeQRCode(image);
+
+				if (qrCodeData != null) {
+					System.out.println("Page " + (page + 1) + ": QR Code Data: " + qrCodeData);
+				} else {
+					System.out.println("Page " + (page + 1) + ": No QR Code found on this page.");
+				}
+			}
+
+			// Close the PDF document
+			document.close();
+
+			RequestPayload requestPayload = new RequestPayload();
+			requestPayload.setScanMode(Enums.ScanMode.QRCODE);
+			requestPayload.setDocType(Enums.DocType.E_INVOICE);
+			requestPayload.setScandata(Enums.ScanData.RAW);
+			requestPayload.setInputType(Enums.InputType.PDFFILE);
+			requestPayload.setSignValidata(true);
+
+			acceptDataFromUser(requestPayload);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static String decodeQRCode(BufferedImage image) {
+		try {
+			LuminanceSource source = new BufferedImageLuminanceSource(image);
+			BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+			Result result = new MultiFormatReader().decode(bitmap);
+
+			return result.getText();
+
+		} catch (NotFoundException e) {
+			// QR code not found in the image
+			return null;
+		}
+
+	}
+
+	private static ResObj acceptDataFromUser(RequestPayload reqpayload) {
+
+		ResObj resObj = new ResObj();
+
+		if (Enums.ScanMode.QRCODE.equals(reqpayload.getScanMode())) {
+			// QR Code case
+			
+			
+		} else {
+			// Barcode Case
+		}
+		return resObj;
+	}
+}

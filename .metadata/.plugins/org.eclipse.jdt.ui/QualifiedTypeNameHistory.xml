@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="io.jsonwebtoken.Jwts"/>
+    <fullyQualifiedTypeName name="io.jsonwebtoken.Claims"/>
+    <fullyQualifiedTypeName name="io.jsonwebtoken.Jws"/>
+    <fullyQualifiedTypeName name="org.bouncycastle.asn1.eac.RSAPublicKey"/>
+    <fullyQualifiedTypeName name="java.security.spec.X509EncodedKeySpec"/>
+    <fullyQualifiedTypeName name="org.bouncycastle.jcajce.provider.asymmetric.x509.KeyFactory"/>
+    <fullyQualifiedTypeName name="org.bouncycastle.jcajce.provider.symmetric.DES.KeyFactory"/>
+    <fullyQualifiedTypeName name="java.security.KeyFactory"/>
+    <fullyQualifiedTypeName name="java.lang.ExceptionInInitializerError"/>
+    <fullyQualifiedTypeName name="java.lang.Exception"/>
+    <fullyQualifiedTypeName name="org.bouncycastle.asn1.pkcs.RSAPublicKey"/>
+    <fullyQualifiedTypeName name="java.security.interfaces.RSAPublicKey"/>
+    <fullyQualifiedTypeName name="java.util.Date"/>
+    <fullyQualifiedTypeName name="scanqrcodeFromPdf.DecodeResponseData"/>
+    <fullyQualifiedTypeName name="org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration"/>
+    <fullyQualifiedTypeName name="org.json.JSONObject"/>
+    <fullyQualifiedTypeName name="scanqrcodeFromPdf.Enums.FileExtensionType"/>
+    <fullyQualifiedTypeName name="java.awt.image.BufferedImage"/>
+    <fullyQualifiedTypeName name="javax.imageio.ImageIO"/>
+    <fullyQualifiedTypeName name="java.awt.image.WritableRaster"/>
+    <fullyQualifiedTypeName name="java.awt.image.DataBufferByte"/>
+    <fullyQualifiedTypeName name="scanqrcodeFromPdf.DecodedData"/>
+    <fullyQualifiedTypeName name="java.util.EnumMap"/>
+    <fullyQualifiedTypeName name="java.util.Map"/>
+    <fullyQualifiedTypeName name="com.google.zxing.DecodeHintType"/>
+</qualifiedTypeNameHistroy>

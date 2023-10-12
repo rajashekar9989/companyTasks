@@ -1,0 +1,31 @@
+package scanqrcodeFromPdf;
+
+public class DecodedData {
+	
+	private String requiredField;
+	
+	private String publicKey;
+
+	public String getRequiredField() {
+		return requiredField;
+	}
+
+	public void setRequiredField(String requiredField) {
+		this.requiredField = requiredField;
+	}
+
+	public String getPublicKey() {
+		return publicKey;
+	}
+
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
+	}
+	
+	
+	
+	
+	
+
+}
+

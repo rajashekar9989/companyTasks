@@ -1,0 +1,10 @@
+package com.portal.ScanPdf.responseEntity;
+
+import java.util.List;
+
+public class ResponseData {
+
+	private List<ResponseEntity> data;
+	private int status;
+
+}

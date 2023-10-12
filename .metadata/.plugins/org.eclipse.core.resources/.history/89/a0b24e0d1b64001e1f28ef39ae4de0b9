@@ -1,0 +1,66 @@
+package scanqrcodeFromPdf;
+
+
+
+public class RequestPayload {
+	
+	
+	private String scanMode;
+	private String docType;
+	private String scanType;
+	private String inputType;
+	private boolean signValidata;
+	
+	private String byteArray;
+	private String inputStream;
+	
+	public String getScanMode() {
+		return scanMode;
+	}
+	public void setScanMode(String scanMode) {
+		this.scanMode = scanMode;
+	}
+	public String getDocType() {
+		return docType;
+	}
+	public void setDocType(String docType) {
+		this.docType = docType;
+	}
+	public String getScanType() {
+		return scanType;
+	}
+	public void setScanType(String scanType) {
+		this.scanType = scanType;
+	}
+	public String getInputType() {
+		return inputType;
+	}
+	public void setInputType(String inputType) {
+		this.inputType = inputType;
+	}
+	public boolean isSignValidata() {
+		return signValidata;
+	}
+	public void setSignValidata(boolean signValidata) {
+		this.signValidata = signValidata;
+	}
+	public String getByteArray() {
+		return byteArray;
+	}
+	public void setByteArray(String byteArray) {
+		this.byteArray = byteArray;
+	}
+	public String getInputStream() {
+		return inputStream;
+	}
+	public void setInputStream(String inputStream) {
+		this.inputStream = inputStream;
+	}
+	
+	
+	
+	
+
+}
+
+

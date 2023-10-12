@@ -1,0 +1,17 @@
+package com.portal.ScanPdf.responseEntity;
+
+
+
+public class RequestPayload {
+	
+	
+	
+	private String scanMode;
+	private String docType;
+	private String scanType;
+	private String inputType;
+	private boolean signValidata;
+
+}
+
+

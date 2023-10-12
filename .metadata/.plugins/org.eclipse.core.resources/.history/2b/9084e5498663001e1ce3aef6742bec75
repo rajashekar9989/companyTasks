@@ -1,0 +1,150 @@
+package com.portal.ScanPdf.controller;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.security.DrbgParameters.Reseed;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.portal.ScanPdf.responseEntity.ResObj;
+import com.portal.ScanPdf.responseEntity.ResponseData;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
+@RestController
+public class ExtractQRCodes {
+
+	@PostMapping("/read-qr-codes")
+	public ResponseEntity<ResponseData> extractQRCodesFromPDF(@RequestParam("pdfFile") MultipartFile pdfFile) {
+
+		ResponseData responseData = new ResponseData();
+		List<ResObj> resObjs = new ArrayList<>();
+		try {
+			// Load the PDF document
+			PDDocument document = PDDocument.load(pdfFile.getInputStream());
+			System.out.println("document -> " + document.getNumberOfPages());
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			System.out.println("pdfRenderer -> " + pdfRenderer);
+
+			for (int page = 0; page < document.getNumberOfPages(); page++) {
+				BufferedImage image = pdfRenderer.renderImageWithDPI(page, 300);
+				ResObj resObj = extractQRCodeDataFromImage(image);
+				resObjs.add(resObj);
+			}
+
+			document.close();
+
+			return new ResponseEntity<>(responseData, HttpStatus.OK);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	public ResObj extractQRCodeDataFromImage(BufferedImage image) throws IOException {
+
+		ResObj resObj = new ResObj();
+		List<String> qrCodeDataList = new ArrayList<>();
+
+		LuminanceSource source = new BufferedImageLuminanceSource(image);
+
+		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+		try {
+
+			Result result = new MultiFormatReader().decode(bitmap);
+
+			String[] jwtArrayData = (result.getText()).split("\\.");
+			System.out.println("## JWT 0 -> " + jwtArrayData[0]);
+			System.out.println("## JWT 1-> " + jwtArrayData[1]);
+			System.out.println("## JWT 2-> " + jwtArrayData[2]);
+
+			byte[] data = Base64.getDecoder().decode(jwtArrayData[1]);
+
+			String content = new String(data, "UTF-8");
+			JSONObject json = new JSONObject(content);
+			
+			System.out.println("payload => " + content);
+
+			RSAPublicKey pub = getLocalPublicKey();
+			boolean valid = validateToken(pub, result.getText());
+			
+			resObj.setScanType("QRCode");
+			resObj.setContentType("JWT Token");
+			resObj.setEsignValid(valid);
+			resObj.setRawData(result.getText());
+			resObj.setDecodedData(""+json);
+
+			System.out.println(" is token valid =>> " + valid);
+
+			qrCodeDataList.add(result.getText());
+
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+		return resObj;
+	}
+
+	RSAPublicKey getLocalPublicKey() {
+		try {
+			URL resource = getClass().getClassLoader().getResource("einvoice_2022_public.pem");
+			File ff = new File(resource.toURI());
+			FileReader fileReader = new FileReader(ff);
+			PEMParser pemParser = new PEMParser(fileReader);
+
+			JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+			RSAPublicKey publicKey = (RSAPublicKey) converter
+					.getPublicKey((SubjectPublicKeyInfo) pemParser.readObject());
+			pemParser.close();
+			return publicKey;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	boolean validateToken(RSAPublicKey publicKey, String jwtToken) {
+
+		try {
+			Claims claims = Jwts.parserBuilder().setSigningKey(publicKey) // Use the RSA public key you obtained earlier
+					.build().parseClaimsJws(jwtToken).getBody();
+
+			// You can access the claims in the JWT token here
+
+			System.out.println("JWT claims: " + claims);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+}

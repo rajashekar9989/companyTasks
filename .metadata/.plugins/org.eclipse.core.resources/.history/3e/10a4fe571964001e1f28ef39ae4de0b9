@@ -1,0 +1,33 @@
+package com.portal.ScanPdf.responseEntity;
+
+public class EnumClasses {
+	
+	
+enum InputType{
+		
+		PDFFILE,INPUTSTRAM,BYTEARRAY
+		
+	}
+	
+	enum ScanMode{
+		
+		QRCODE,Barcode
+		
+		
+	}
+	
+	enum DocType1{
+		
+		E_INVOICE,GRN
+		
+	}
+	
+	enum ScanData{
+		
+		RAW,DECODED_DATA
+		
+	}
+	
+	
+
+}

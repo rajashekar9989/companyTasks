@@ -1,0 +1,86 @@
+package scanqrcodeFromPdf;
+
+import scanqrcodeFromPdf.Enums.DocType;
+import scanqrcodeFromPdf.Enums.InputType;
+import scanqrcodeFromPdf.Enums.ScanData;
+import scanqrcodeFromPdf.Enums.ScanMode;
+
+public class RequestPayload {
+	
+	
+	private ScanMode scanMode;
+	private DocType docType;
+	private  ScanData scanData;
+	
+	private InputType inputType;
+	private boolean signValidata;
+	
+	private String byteArray;
+	private String inputStream;
+	
+	private DecodedData decodedData;
+	
+	
+	public ScanMode getScanMode() {
+		return scanMode;
+	}
+	public void setScanMode(ScanMode scanMode) {
+		this.scanMode = scanMode;
+	}
+	
+	
+	
+	
+	public DocType getDocType() {
+		return docType;
+	}
+	public void setDocType(DocType docType) {
+		this.docType = docType;
+	}
+	public ScanData getScandata() {
+		return scanData;
+	}
+	public void setScandata(ScanData scandata) {
+		this.scanData = scandata;
+	}
+	public InputType getInputType() {
+		return inputType;
+	}
+	public void setInputType(InputType inputType) {
+		this.inputType = inputType;
+	}
+	public boolean isSignValidata() {
+		return signValidata;
+	}
+	public void setSignValidata(boolean signValidata) {
+		this.signValidata = signValidata;
+	}
+	public String getByteArray() {
+		return byteArray;
+	}
+	public void setByteArray(String byteArray) {
+		this.byteArray = byteArray;
+	}
+	public String getInputStream() {
+		return inputStream;
+	}
+	public void setInputStream(String inputStream) {
+		this.inputStream = inputStream;
+	}
+	public DecodedData getDecodedData() {
+		return decodedData;
+	}
+	public void setDecodedData(DecodedData decodedData) {
+		this.decodedData = decodedData;
+	}
+	
+	
+	
+	
+	
+	
+	
+
+}
+
+

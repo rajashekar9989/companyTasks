@@ -1,0 +1,81 @@
+package com.portal.ScanPdf.Services;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.portal.ScanPdf.controller.ExtractQRCodesController;
+import com.portal.ScanPdf.responseEntity.ResObj;
+
+@Service
+public class QRCodeToJWTTokenService {
+	
+	
+	 @Autowired
+	 private ExtractQRCodesController extractQrcode;
+	 
+	 
+	
+	public ResObj extractQRCodeDataFromImage(BufferedImage image) throws IOException {
+
+		ResObj resObj = new ResObj();
+		List<String> qrCodeDataList = new ArrayList<>();
+
+		LuminanceSource source = new BufferedImageLuminanceSource(image);
+
+		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+		try {
+
+			Result result = new MultiFormatReader().decode(bitmap);
+
+			String[] jwtArrayData = (result.getText()).split("\\.");
+			System.out.println("## JWT 0 -> " + jwtArrayData[0]);
+			System.out.println("## JWT 1-> " + jwtArrayData[1]);
+			System.out.println("## JWT 2-> " + jwtArrayData[2]);
+
+			byte[] data = Base64.getDecoder().decode(jwtArrayData[1]);
+
+			String content = new String(data, "UTF-8");
+//			content = content.replaceAll("\\\\\"", "\"");
+			JSONObject json = new JSONObject(content);
+
+			System.out.println("payload => " + content);
+
+			RSAPublicKey pub = getLocalPublicKey();
+			boolean valid = validateToken(pub, result.getText());
+
+			resObj.setScanType("QRCode");
+			resObj.setContentType("JWT Token");
+			resObj.setEsignValid(valid);
+			resObj.setRawData(result.getText());
+			
+			resObj.setDecodedData("" + json);
+
+			System.out.println(" is token valid =>> " + valid);
+
+			qrCodeDataList.add(result.getText());
+
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+		return resObj;
+	}
+	
+	
+
+}

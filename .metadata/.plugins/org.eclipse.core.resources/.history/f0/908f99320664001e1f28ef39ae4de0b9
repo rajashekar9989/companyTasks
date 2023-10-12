@@ -1,0 +1,59 @@
+package com.portal.ScanPdf.controller;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
+import com.google.zxing.multi.qrcode.QRCodeMultiReader;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class QRCodeAndBarCodeScanner {
+
+    public static void main(String[] args) throws IOException, NotFoundException {
+        // Create a new PDF document
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+
+        // Initialize the PDF content stream
+        PDPageContentStream contentStream = new PDPageContentStream(document, page);
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        contentStream.beginText();
+        contentStream.newLineAtOffset(50, 750);
+
+        // Process multiple QR codes and barcodes
+        List<File> imageFiles = new ArrayList<>();
+        imageFiles.add(new File("image1.png"));
+        imageFiles.add(new File("image2.png"));
+
+        for (File imageFile : imageFiles) {
+            // Read and decode the QR code or barcode from the image
+            BufferedImage image = ImageIO.read(imageFile);
+            BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(image)));
+            MultiFormatReader reader = new MultiFormatReader();
+            Result result = reader.decode(binaryBitmap);
+
+            // Insert the decoded data into the PDF
+            contentStream.showText("Data: " + result.getText());
+            contentStream.newLine();
+        }
+
+        contentStream.endText();
+        contentStream.close();
+
+        // Save the PDF document
+        document.save("output.pdf");
+        document.close();
+    }
+}

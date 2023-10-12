@@ -1,0 +1,306 @@
+package scanqrcodeFromPdf;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.json.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
+public class QRCodeExtractor {
+
+	public static void main(String[] args) {
+		try {
+
+			QRCodeExtractor qrcode = new QRCodeExtractor();
+
+			File sourceFile = new File("C:\\Users\\admn\\Downloads\\Invoice_sample (2)[68].pdf");
+			InputStream fileInputstream = new FileInputStream(sourceFile);
+			byte[] arr = Files.readAllBytes(sourceFile.toPath());
+			
+			File imageFile = new File("C:\\Users\\admn\\Downloads\\incresol_website.png");
+			BufferedImage bufferedImage = ImageIO.read(imageFile);
+			WritableRaster raster = bufferedImage.getRaster();
+			DataBufferByte data = (DataBufferByte)raster.getDataBuffer();
+			// byte array
+			byte[] imageBytes = data.getData();
+
+			RequestPayload requestPayload = new RequestPayload();
+			requestPayload.setFileExtensionType(Enums.FileExtensionType.PNG);
+			requestPayload.setScanMode(Enums.ScanMode.QRCODE);
+			requestPayload.setDocType(Enums.DocType.E_INVOICE);
+			requestPayload.setScandata(Enums.ScanData.DECODED_DATA);
+			requestPayload.setInputType(Enums.InputType.BYTEARRAY);
+			requestPayload.setSignValidata(true);
+			requestPayload.setInputStream(fileInputstream);			
+//			requestPayload.setByteArray(arr);
+			requestPayload.setByteArray(imageBytes);
+			
+			DecodedData decodedData = new DecodedData();
+			decodedData.setPublicKey(
+					"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA35ECb3t4DSCq3Wo4LONh3/jF+1k/S0MEareXFww+mm4AgymHheAWqhIGFQV6fbw2t/ZnG4TULXgYwBUCUffj+bqYAsvo2QyF9hbieGY2SDSieToUmyh8gtJZn0MG04d0NgFjunmnM/7ROkEAOXFvNDizO1NiKiOPbuLIOCrDvQdu48HNUR8Yg0pcMaOnBGVwasv4UIfMZXbBzjwngbwzK8M9jhp4y6xqsmF+wmFZhVpRhIa6nRDkedgroU5IlR/ntqDAhzk/p7zu2btAzA47HltfsGratEqFIBsj/ug+YFZh+8QOzbp2fizOo6DUdbYyJL7lxtEOdOI7ibKccnvlnQIDAQAB");
+			requestPayload.setDecodedData(decodedData);
+			ResponseData responseData = qrcode.acceptDataFromUser(requestPayload);
+			Gson gson = new Gson();
+			String json = gson.toJson(responseData);
+			System.out.println("Response Data => \n" + json);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static String decodeQRCode(BufferedImage image) {
+		try {
+			LuminanceSource source = new BufferedImageLuminanceSource(image);
+			BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+			Result result = new MultiFormatReader().decode(bitmap);
+
+			return result.getText();
+
+		} catch (NotFoundException e) {
+			// QR code not found in the image
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	private ResponseData acceptDataFromUser(RequestPayload reqpayload) {
+
+		ResponseData responseData = new ResponseData();
+
+		if (Enums.ScanMode.QRCODE.equals(reqpayload.getScanMode())) {
+			// QR Code case
+			responseData = validateQr(reqpayload);
+		} else {
+			// Barcode Case
+			responseData.setStatus(1);
+			responseData.setMessage("Barcode validation is not imlplemented yet!");
+		}
+		return responseData;
+	}
+
+	private ResponseData validateQr(RequestPayload reqpayload) {
+		ResponseData responseData = new ResponseData();
+		if (Enums.DocType.E_INVOICE.equals(reqpayload.getDocType())) {
+			// E-invoice case
+			responseData = validateScanType(reqpayload);
+		} else {
+			// other doctypes
+			responseData.setStatus(1);
+			responseData.setMessage("Only E-Invoice doctypes are handled!! ");
+		}
+		return responseData;
+	}
+
+	private ResponseData validateScanType(RequestPayload reqpayload) {
+		ResponseData responseData = new ResponseData();
+		if (Enums.ScanData.RAW.equals(reqpayload.getScandata())) {
+			// Raw scan case
+			responseData = scanData(reqpayload, false, false);
+		} else {
+			// decoded data scan case
+			responseData = scanData(reqpayload, true, reqpayload.isSignValidata());
+		}
+		return responseData;
+	}
+
+	private ResponseData scanData(RequestPayload requestPayload, boolean isDecode, boolean isValidate) {
+		ResponseData responseData = new ResponseData();
+		if (!Enums.FileExtensionType.PDF.equals(requestPayload.getFileExtensionType())) {
+			
+			try {
+				String content = new String(requestPayload.getByteArray(), "UTF-8");
+				System.out.println("content => "+content);
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			getQRdataFromPNG();
+			responseData.setStatus(1);
+			responseData.setMessage("Provided file extension was not supported!!");
+			return responseData;
+		}
+		if (Enums.InputType.PDFFILE.equals(requestPayload.getInputType())) {
+			try {
+				File sourceFile = new File("C:\\Users\\admn\\Downloads\\Invoice_sample (2)[68].pdf");
+				// get the path from fileInputstream
+				byte[] arr = Files.readAllBytes(sourceFile.toPath());
+				responseData = getDataFromPDFFile(arr, isDecode, isValidate, requestPayload.getDecodedData());
+				responseData.setMessage("Data extracted from PDF file Successfully!!");
+				return responseData;
+			} catch (Exception e) {
+				e.printStackTrace();
+				responseData.setMessage(e.getMessage());
+				responseData.setStatus(1);
+				return responseData;
+			}
+		} else if (Enums.InputType.INPUTSTRAM.equals(requestPayload.getInputType())) {
+			try {
+				InputStream fileInputstream = requestPayload.getInputStream();
+				byte[] byteArray = fileInputstream.readAllBytes();
+				responseData = getDataFromPDFFile(byteArray, isDecode, isValidate, requestPayload.getDecodedData());
+				responseData.setMessage("Inputstream Data extracted Successfully!!");
+				return responseData;
+			} catch (Exception e) {
+				e.printStackTrace();
+				responseData.setStatus(1);
+				responseData.setMessage(e.getMessage());
+				return responseData;
+			}
+		} else if (Enums.InputType.BYTEARRAY.equals(requestPayload.getInputType())) {
+			return getDataFromPDFFile(requestPayload.getByteArray(), isDecode, isValidate,
+					requestPayload.getDecodedData());
+		}
+		return null;
+	}
+
+	ResponseData getDataFromPDFFile(byte[] data, boolean isDecode, boolean isValidate, DecodedData decodedData) {
+		ResponseData responseData = new ResponseData();
+		List<ResObj> resObjs = new ArrayList();
+		try {
+			PDDocument document = Loader.loadPDF(data);
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			// Loop through each page in the PDF
+			for (int page = 0; page < document.getNumberOfPages(); ++page) {
+				// Render the page as an image
+				ResObj resObj = new ResObj();
+				BufferedImage image = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
+				// Decode QR code from the image
+				String qrCodeData = decodeQRCode(image);
+				boolean isJwtString = isJWTString(qrCodeData);
+				resObj.setQRContainsJWT(isJwtString);
+				resObj.setRawData(qrCodeData);
+				if (isJwtString && isDecode) {
+					String[] qrData = qrCodeData.split("\\.");
+					byte[] mydata = Base64.getDecoder().decode(qrData[1]);
+					String content = new String(mydata, "UTF-8");
+					JSONObject json = new JSONObject(content);
+					Gson gson = new Gson();
+					JSONObject jsonObject = new JSONObject(content);
+					DecodeResponseData decodeResponseData = gson.fromJson(jsonObject.getString("data"),
+							DecodeResponseData.class);
+					resObj.setDecodeResponseData(decodeResponseData);
+					if (isValidate) {
+						RSAPublicKey key = generateKey(decodedData.getPublicKey());
+						resObj.setEsignValid(validateToken(key, qrCodeData));
+					}
+				}
+
+				resObjs.add(resObj);
+			}
+			// Close the PDF document
+			document.close();
+			responseData.setData(resObjs);
+			responseData.setStatus(0);
+			responseData.setMessage("Byte array extracted data successfully!!");
+			return responseData;
+		} catch (Exception e) {
+			e.printStackTrace();
+			responseData.setMessage(e.getMessage());
+			responseData.setStatus(1);
+		}
+		return responseData;
+	}
+
+	RSAPublicKey generateKey(String keyData) {
+		byte[] decoded = Base64.getDecoder().decode(keyData);
+		X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
+		KeyFactory kf;
+		try {
+			kf = KeyFactory.getInstance("RSA");
+			RSAPublicKey generatePublic = (RSAPublicKey) kf.generatePublic(spec);
+			return generatePublic;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	boolean validateToken(RSAPublicKey publicKey, String jwtToken) {
+		try {
+			Claims claims = Jwts.parserBuilder().setSigningKey(publicKey) // Use the RSA public key you obtained earlier
+					.build().parseClaimsJws(jwtToken).getBody();
+
+			// You can access the claims in the JWT token here
+
+			System.out.println("JWT claims: " + claims);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	boolean isJWTString(String key) {
+		String[] jswSplitted = key.split("\\.");
+		if (jswSplitted.length != 3) {
+			return false;
+		}
+		try {
+			String jsonFirstString = new String(Base64.getDecoder().decode(jswSplitted[0]));
+			JSONObject firstPart = new JSONObject(jsonFirstString);
+			if (!firstPart.has("alg")) {
+				return false;
+			}
+			// validate if required parameters check if any on second part
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	String getQRdataFromPNG() {
+		try {
+			// Load the QR code image (PNG or JPEG)
+			BufferedImage image = ImageIO.read(new File("C:\\Users\\admn\\Downloads\\incresol_website.png"));
+
+			// Create a BinaryBitmap from the image
+			BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(image)));
+
+			// Create a MultiFormatReader
+			MultiFormatReader reader = new MultiFormatReader();
+
+			// Decode the QR code
+			Result result = reader.decode(binaryBitmap);
+
+			// Print the QR code data
+			System.out.println("QR Code Data: " + result.getText());
+			return result.getText();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+}

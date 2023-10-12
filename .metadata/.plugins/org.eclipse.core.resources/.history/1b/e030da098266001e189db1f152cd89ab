@@ -1,0 +1,84 @@
+package scanqrcodeFromPdf;
+
+import java.util.Date;
+
+public class DecodeResponseData {
+	
+	
+	private String  SellerGstin;
+	private String BuyerGstin;
+	private long DocNo;
+	private String DocTyp;
+	private Date DocDt;
+	private double TotInvVal;
+	private int ItemCnt;
+	private long MainHsnCode;
+	private String Irn;
+	private Date IrnDt;
+	public String getSellerGstin() {
+		return SellerGstin;
+	}
+	public void setSellerGstin(String sellerGstin) {
+		SellerGstin = sellerGstin;
+	}
+	public String getBuyerGstin() {
+		return BuyerGstin;
+	}
+	public void setBuyerGstin(String buyerGstin) {
+		BuyerGstin = buyerGstin;
+	}
+	public long getDocNo() {
+		return DocNo;
+	}
+	public void setDocNo(long docNo) {
+		DocNo = docNo;
+	}
+	public String getDocTyp() {
+		return DocTyp;
+	}
+	public void setDocTyp(String docTyp) {
+		DocTyp = docTyp;
+	}
+	public Date getDocDt() {
+		return DocDt;
+	}
+	public void setDocDt(Date docDt) {
+		DocDt = docDt;
+	}
+	public double getTotInvVal() {
+		return TotInvVal;
+	}
+	public void setTotInvVal(double totInvVal) {
+		TotInvVal = totInvVal;
+	}
+	public int getItemCnt() {
+		return ItemCnt;
+	}
+	public void setItemCnt(int itemCnt) {
+		ItemCnt = itemCnt;
+	}
+	public long getMainHsnCode() {
+		return MainHsnCode;
+	}
+	public void setMainHsnCode(long mainHsnCode) {
+		MainHsnCode = mainHsnCode;
+	}
+	public String getIrn() {
+		return Irn;
+	}
+	public void setIrn(String irn) {
+		Irn = irn;
+	}
+	public Date getIrnDt() {
+		return IrnDt;
+	}
+	public void setIrnDt(Date irnDt) {
+		IrnDt = irnDt;
+	}
+	
+	
+	
+	
+	
+
+}

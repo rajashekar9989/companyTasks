@@ -1,0 +1,5 @@
+package com.portal.ScanPdf.Services;
+
+public class QRCodeToRawData {
+
+}

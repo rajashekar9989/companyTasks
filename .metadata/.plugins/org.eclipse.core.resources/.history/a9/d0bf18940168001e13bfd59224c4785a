@@ -1,0 +1,70 @@
+package scanqrcodeFromPdf;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import javax.imageio.ImageIO;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.ChecksumException;
+import com.google.zxing.FormatException;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Reader;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
+public class VerifyJWTToken {
+	
+    public static void main(String[] args) {
+        String qrCodeImagePath = "C:\\Users\\admn\\Downloads\\E_Invoice_QR.PNG"; // Replace with your QR code image path
+
+        try {
+            // Read the QR code image
+            BufferedImage bufferedImage = ImageIO.read(new File(qrCodeImagePath));
+
+            // Decode the QR code
+            BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bufferedImage)));
+            Reader reader = new QRCodeReader();
+            Result result = reader.decode(binaryBitmap);
+
+            // Check if the decoded content is a JWT
+            String jwtToken = result.getText();
+            if (isJWT(jwtToken)) {
+                System.out.println("Valid JWT: " + jwtToken);
+                // You can now parse and work with the JWT claims if needed
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(Keys.hmacShaKeyFor("your_secret_key".getBytes(StandardCharsets.UTF_8)))
+                        .build()
+                        .parseClaimsJws(jwtToken)
+                        .getBody();
+                System.out.println("JWT Claims: " + claims);
+            } else {
+                System.out.println("Not a valid JWT: " + jwtToken);
+            }
+        } catch (IOException | NotFoundException | FormatException | ChecksumException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean isJWT(String token) {
+        try {
+            Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor("your_secret_key".getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            // JWT parsing failed
+            return false;
+        }
+    }
+}
+

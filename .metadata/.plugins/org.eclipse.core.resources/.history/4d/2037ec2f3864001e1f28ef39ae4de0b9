@@ -1,0 +1,22 @@
+package scanqrcodeFromPdf;
+
+import java.util.List;
+
+public class ResponseData {
+
+	private List<ResObj> data;
+	private int status;
+	public List<ResObj> getData() {
+		return data;
+	}
+	public void setData(List<ResObj> data) {
+		this.data = data;
+	}
+	public int getStatus() {
+		return status;
+	}
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+}

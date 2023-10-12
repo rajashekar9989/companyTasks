@@ -1,0 +1,5 @@
+package com.portal.ScanPdf.controller;
+
+public class QRCodeAndBarCodeScanner {
+
+}

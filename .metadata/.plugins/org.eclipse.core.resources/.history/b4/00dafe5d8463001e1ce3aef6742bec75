@@ -1,0 +1,5 @@
+package com.portal.ScanPdf.responseEntity;
+
+public class ResponseData {
+
+}

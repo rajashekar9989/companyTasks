@@ -1,0 +1,64 @@
+package scanqrcodeFromPdf;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Hashtable;
+
+import javax.imageio.ImageIO;
+
+//import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+
+public class ReadBarcodeFromPDF {
+
+	private String qrCode() {
+
+		// String sourceDir = "/home/incresol/Documents/Sathish Backups 07-04-2021/PDF
+		
+		// QR Extractor/Invoice_sample (2).pdf";
+		String sourceDir = "C:Users\\\\admn\\\\Downloads\\\\Invoice_sample (2)[68].pdf";
+		File sourceFile = new File(sourceDir);
+		
+		try {
+
+			PDDocument document = PDDocument.load(sourceFile);
+			//PDDocument document = Loader.loadPDF(sourceFile);
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(0, 700, ImageType.BINARY);
+			LuminanceSource luminanceSource = new BufferedImageLuminanceSource(bufferedImage);
+			HybridBinarizer hybridBinarizer = new HybridBinarizer(luminanceSource);
+			BinaryBitmap bitmap = new BinaryBitmap(hybridBinarizer);
+			MultiFormatReader reader = new MultiFormatReader();
+			Hashtable<DecodeHintType, Object> hints = new Hashtable<>();
+			hints.put(DecodeHintType.POSSIBLE_FORMATS,
+					Arrays.asList(BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX, BarcodeFormat.PDF_417));
+			// hints.put(DecodeHintType.PURE_BARCODE, Boolean.FALSE);
+			hints.put(DecodeHintType.TRY_HARDER, Boolean.FALSE);
+			reader.setHints(hints);
+			Result result = reader.decodeWithState(bitmap);
+			return result.getText();
+		} catch (Exception e) {
+			System.out.println("error");
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static void main(String[] args) throws Exception {
+		ReadBarcodeFromPDF br = new ReadBarcodeFromPDF();
+
+		System.out.println(br.qrCode());
+	}
+}
